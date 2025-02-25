@@ -162,9 +162,7 @@ function server.create_client_capabilities()
   local blink_capabilities = mk_capabilities_if_available('blink.cmp', function(blink)
     return blink.get_lsp_capabilities()
   end)
-  local cmp_capabilities = mk_capabilities_if_available('cmp_nvim_lsp', function(cmp_nvim_lsp)
-    return cmp_nvim_lsp.default_capabilities()
-  end)
+
   local selection_range_capabilities = mk_capabilities_if_available('lsp-selection-range', function(lsp_selection_range)
     return lsp_selection_range.update_capabilities {}
   end)
@@ -182,7 +180,7 @@ function server.create_client_capabilities()
     'force',
     rs_capabilities,
     blink_capabilities,
-    cmp_capabilities,
+    capabilities,
     selection_range_capabilities,
     folding_range_capabilities
   )
