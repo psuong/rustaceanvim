@@ -7,6 +7,18 @@ local server_config = require('rustaceanvim.config.server')
 
 local RustaceanConfig
 
+local rustaceanvim = vim.g.rustaceanvim or {}
+local rustaceanvim_opts = type(rustaceanvim) == 'function' and rustaceanvim() or rustaceanvim
+
+---Wrapper around |vim.fn.exepath()| that returns the binary if no path is found.
+---@param binary string
+---@return string the full path to the executable or `binary` if no path is found.
+---@see vim.fn.exepath()
+local function exepath_or_binary(binary)
+  local exe_path = vim.fn.exepath(binary)
+  return #exe_path > 0 and exe_path or binary
+end
+
 ---@class rustaceanvim.internal.RAInitializedStatus : rustaceanvim.RAInitializedStatus
 ---@field health rustaceanvim.lsp_server_health_status
 ---@field quiescent boolean inactive?
@@ -53,7 +65,6 @@ local function load_dap_configuration(type)
   -- It is necessary to check for changes in the `dap.configurations` table, as
   -- `load_launchjs` does not return anything, it loads directly into `dap.configurations`.
   local pre_launch = vim.deepcopy(dap.configurations) or {}
-  require('dap.ext.vscode').load_launchjs(nil, { lldb = { 'rust' }, codelldb = { 'rust' } })
   for name, configuration_entries in pairs(dap.configurations) do
     if pre_launch[name] == nil or not vim.deep_equal(pre_launch[name], configuration_entries) then
       -- `configurations` are tables of `configuration` entries
@@ -99,7 +110,7 @@ local RustaceanDefaultConfig = {
     cargo_override = nil,
 
     ---@type boolean
-    enable_nextest = true,
+    enable_nextest = vim.fn.executable('cargo-nextest') == 1,
 
     ---@type boolean
     enable_clippy = true,
@@ -131,6 +142,14 @@ local RustaceanDefaultConfig = {
       --- whether to fall back to `vim.ui.select` if there are no grouped code actions
       ---@type boolean
       ui_select_fallback = false,
+
+      ---@class rustaceanvim.internal.code_action.Keys
+      keys = {
+        ---@type string | string[]
+        confirm = { '<CR>' },
+        ---@type string | string[]
+        quit = { 'q', '<Esc>' },
+      },
     },
 
     --- options same as lsp hover
@@ -262,17 +281,30 @@ local RustaceanDefaultConfig = {
         return false
       end
       local cmd = types.evaluate(RustaceanConfig.server.cmd)
+      if type(cmd) == 'function' then
+        -- This could be a function that connects via a TCP socket, so we don't want to evaluate it.
+        return true
+      end
       ---@cast cmd string[]
       local rs_bin = cmd[1]
       return vim.fn.executable(rs_bin) == 1
     end,
-    ---@type string[] | fun():string[]
+    ---@type string[] | fun():(string[]|fun(dispatchers: vim.lsp.rpc.Dispatchers): vim.lsp.rpc.PublicClient)
     cmd = function()
-      return { 'rust-analyzer', '--log-file', RustaceanConfig.server.logfile }
+      return { exepath_or_binary('rust-analyzer'), '--log-file', RustaceanConfig.server.logfile }
     end,
 
     ---@type string | fun(filename: string, default: fun(filename: string):string|nil):string|nil
     root_dir = cargo.get_root_dir,
+
+    ra_multiplex = {
+      ---@type boolean
+      enable = vim.tbl_get(rustaceanvim_opts, 'server', 'cmd') == nil,
+      ---@type string
+      host = '127.0.0.1',
+      ---@type integer
+      port = 27631,
+    },
 
     --- standalone file support
     --- setting it to false may improve startup time
@@ -312,7 +344,12 @@ local RustaceanDefaultConfig = {
       local has_mason, mason_registry = pcall(require, 'mason-registry')
       if has_mason and mason_registry.is_installed('codelldb') then
         local codelldb_package = mason_registry.get_package('codelldb')
-        local mason_codelldb_path = vim.fs.joinpath(codelldb_package:get_install_path(), 'extension')
+        local mason_codelldb_path
+        if require('mason.version').MAJOR_VERSION > 1 then
+          mason_codelldb_path = vim.fs.joinpath(vim.fn.expand('$MASON'), 'packages', codelldb_package.name, 'extension')
+        else
+          mason_codelldb_path = vim.fs.joinpath(codelldb_package:get_install_path(), 'extension')
+        end
         local codelldb_path = vim.fs.joinpath(mason_codelldb_path, 'adapter', 'codelldb')
         local liblldb_path = vim.fs.joinpath(mason_codelldb_path, 'lldb', 'lib', 'liblldb')
         local shell = require('rustaceanvim.shell')
@@ -330,7 +367,7 @@ local RustaceanDefaultConfig = {
           host = '127.0.0.1',
           port = '${port}',
           executable = {
-            command = 'codelldb',
+            command = exepath_or_binary('codelldb'),
             args = { '--port', '${port}' },
           },
         }
@@ -344,7 +381,7 @@ local RustaceanDefaultConfig = {
         ---@cast result rustaceanvim.dap.executable.Config
         result = {
           type = 'executable',
-          command = command,
+          command = exepath_or_binary(command),
           name = 'lldb',
         }
       end
@@ -389,20 +426,23 @@ local RustaceanDefaultConfig = {
   -- debug info
   was_g_rustaceanvim_sourced = vim.g.rustaceanvim ~= nil,
 }
-local rustaceanvim = vim.g.rustaceanvim or {}
-local opts = type(rustaceanvim) == 'function' and rustaceanvim() or rustaceanvim
 for _, executor in pairs { 'executor', 'test_executor', 'crate_test_executor' } do
-  if opts.tools and opts.tools[executor] and type(opts.tools[executor]) == 'string' then
-    opts.tools[executor] = assert(executors[opts.tools[executor]], 'Unknown RustaceanExecutor')
+  if
+    rustaceanvim_opts.tools
+    and rustaceanvim_opts.tools[executor]
+    and type(rustaceanvim_opts.tools[executor]) == 'string'
+  then
+    rustaceanvim_opts.tools[executor] =
+      assert(executors[rustaceanvim_opts.tools[executor]], 'Unknown RustaceanExecutor')
   end
 end
 
 ---@type rustaceanvim.Config
-RustaceanConfig = vim.tbl_deep_extend('force', {}, RustaceanDefaultConfig, opts)
+RustaceanConfig = vim.tbl_deep_extend('force', {}, RustaceanDefaultConfig, rustaceanvim_opts)
 
 -- Override user dap.adapter config in a backward compatible way
-if opts.dap and opts.dap.adapter then
-  local user_adapter = opts.dap.adapter
+if rustaceanvim_opts.dap and rustaceanvim_opts.dap.adapter then
+  local user_adapter = rustaceanvim_opts.dap.adapter
   local default_adapter = types.evaluate(RustaceanConfig.dap.adapter)
   if
     type(user_adapter) == 'table'

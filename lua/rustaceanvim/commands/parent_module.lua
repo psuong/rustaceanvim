@@ -4,7 +4,7 @@ local compat = require('rustaceanvim.compat')
 
 local function handler(_, result, ctx)
   if result == nil or vim.tbl_isempty(result) then
-    vim.api.nvim_out_write("Can't find parent module\n")
+    vim.notify("Can't find parent module.", vim.log.levels.ERROR)
     return
   end
 

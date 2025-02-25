@@ -11,7 +11,7 @@
     <br />
     <a href="https://github.com/mrcjkb/rustaceanvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml">Report Bug</a>
     ·
-    <a href="https://github.com/mrcjkb/rustaceanvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml">Request Feature</a>
+    <a href="https://github.com/mrcjkb/rustaceanvim/discussions/new?category=ideas">Request Feature</a>
     ·
     <a href="https://github.com/mrcjkb/rustaceanvim/discussions/new?category=q-a">Ask Question</a>
   </p>
@@ -408,9 +408,6 @@ vim.keymap.set(
  vim.cmd.RustLsp { 'hover', 'actions' }
  ```
 
- By default, this plugin replaces Neovim's built-in hover handler with hover
- actions, so you can also use `vim.lsp.buf.hover()`.
-
  You can invoke a hover action by switching to the hover window and entering `<CR>`
  on the respective line, or with a keymap for the `<Plug>RustHoverAction` mapping,
  which accepts a `<count>` prefix as the (1-based) index of the hover action to invoke.
@@ -502,6 +499,26 @@ vim.keymap.set(
     current cursor line.
 
 ![](https://github.com/mrcjkb/rustaceanvim/assets/12857160/a972c6b6-c504-4c2a-8380-53451bb8c2de)
+
+</details>
+
+<details>
+  <summary>
+	<b>Jump to related diagnostics</b>
+  </summary>
+
+  Sometimes, rust-analyzer provides related diagnostics in multiple locations.
+  Using the `relatedDiagnostics` subcommand, you can navigate between them.
+  If a diagnostic has more than one related diagnostic, this will populate the quickfix list.
+
+  ```vim
+  :RustLsp relatedDiagnostics
+  ```
+  ```lua
+  vim.cmd.RustLsp('relatedDiagnostics')
+  ```
+
+![](https://github.com/user-attachments/assets/26695f41-2d9d-4250-82fa-fea867fd9432)
 
 </details>
 
@@ -721,6 +738,18 @@ by setting the rust-analyzer
 
 </details>
 
+<details>
+  <summary>
+	<b>ra-multiplex</b>
+  </summary>
+
+  On Linux and MacOS, rustaceanvim can auto-detect and connect to a
+  running [ra-multiplex](https://github.com/pr2502/ra-multiplex) server.
+  By default, it will try to do so automatically if the `vim.g.rustaceanvim.server.cmd` 
+  option is unset.
+  See also `:h rustaceanvim.ra_multiplex`.
+
+</details>
 <!-- markdownlint-restore -->
 
 ## :gear: Advanced configuration
@@ -876,6 +905,11 @@ As Neovim >= 0.10 supports inlay hints natively,
 I have removed the code from this plugin.
 See [`:h lsp-inlay_hint`](https://neovim.io/doc/user/lsp.html#lsp-inlay_hint)).
 
+#### Can I display inlay hints to the end of the line?
+
+You can use the [`nvim-lsp-endhints`](https://github.com/chrisgrieser/nvim-lsp-endhints)
+plugin.
+
 #### How to enable auto completion?
 
 As of [#ff097f2091e7a970e5b12960683b4dade5563040](https://github.com/neovim/neovim/pull/27339),
@@ -883,10 +917,12 @@ Neovim has built-in completion based on the `triggerCharacters` sent by
 language servers.
 Omni completion is also available for a more traditional `vim`-like completion experience.
 
-For more extensible and complex autocompletion setups you need a plugin such as [`nvim-cmp`](https://github.com/hrsh7th/nvim-cmp)
-and a LSP completion source like [`cmp-nvim-lsp`](https://github.com/hrsh7th/cmp-nvim-lsp).
+For more extensible and complex autocompletion setups,
+you need a plugin such as [`nvim-cmp`](https://github.com/hrsh7th/nvim-cmp)
+and a LSP completion source like [`cmp-nvim-lsp`](https://github.com/hrsh7th/cmp-nvim-lsp),
+or you may use [`blink.cmp`](https://github.com/saghen/blink.cmp).
 This plugin will automatically register the necessary client capabilities
-if you have `cmp-nvim-lsp` installed.
+if you have either `cmp-nvim-lsp` or `blink.cmp` installed.
 
 #### I'm having issues with (auto)completion
 

@@ -50,9 +50,19 @@ local config = {}
 vim.g.rustaceanvim = vim.g.rustaceanvim
 
 ---@class rustaceanvim.Opts
----@field tools? rustaceanvim.tools.Opts Plugin options
----@field server? rustaceanvim.lsp.ClientOpts Language server client options
----@field dap? rustaceanvim.dap.Opts Debug adapter options
+---
+---Plugin options.
+---@field tools? rustaceanvim.tools.Opts
+---
+---Language server client options.
+---In Neovim >= 0.11 (nightly), these can also be set using |vim.lsp.config()| for "rust-analyzer".
+---If both the `server` table and a `vim.lsp.config["rust-analyzer"]` are defined,
+---the |vim.lsp.config()| settings are merged into the `server` table, taking precedence over
+---existing settings.
+---@field server? rustaceanvim.lsp.ClientOpts
+---
+---Debug adapter options
+---@field dap? rustaceanvim.dap.Opts
 
 ---@class rustaceanvim.tools.Opts
 ---
@@ -130,6 +140,18 @@ vim.g.rustaceanvim = vim.g.rustaceanvim
 ---Whether to fall back to `vim.ui.select` if there are no grouped code actions.
 ---Default: `false`
 ---@field ui_select_fallback? boolean
+---
+---@field keys rustaceanvim.code-action.Keys
+
+---@class rustaceanvim.code-action.Keys
+---
+---The key or keys with which to confirm a code action
+---Default: `"<CR>"`.
+---@field confirm? string | string[]
+---
+---The key or keys with which to close a code action window
+---Default: `{ "q", "<Esc>" }`.
+---@field quit? string
 
 ---@alias rustaceanvim.lsp_server_health_status 'ok' | 'warning' | 'error'
 
@@ -168,12 +190,17 @@ vim.g.rustaceanvim = vim.g.rustaceanvim
 ---@field auto_attach? boolean | fun(bufnr: integer):boolean
 ---
 ---Command and arguments for starting rust-analyzer
----@field cmd? string[] | fun():string[]
+---Can be a list of arguments, a function that returns a list of arguments,
+---or a function that returns an LSP RPC client factory (see |vim.lsp.rpc.connect|).
+---@field cmd? string[] | fun():(string[]|fun(dispatchers: vim.lsp.rpc.Dispatchers): vim.lsp.rpc.PublicClient)
 ---
 ---The directory to use for the attached LSP.
 ---Can be a function, which may return nil if no server should attach.
 ---The second argument contains the default implementation, which can be used for fallback behavior.
 ---@field root_dir? string | fun(filename: string, default: fun(filename: string):string|nil):string|nil
+---
+---Options for connecting to ra-multiplex.
+---@field ra_multiplex? rustaceanvim.ra_multiplex.Opts
 ---
 ---Setting passed to rust-analyzer.
 ---Defaults to a function that looks for a `rust-analyzer.json` file or returns an empty table.
@@ -197,6 +224,22 @@ vim.g.rustaceanvim = vim.g.rustaceanvim
 ---@field status_notify_level? rustaceanvim.server.status_notify_level
 ---
 ---@see vim.lsp.ClientConfig
+
+---@class rustaceanvim.ra_multiplex.Opts
+---
+---Whether to enable ra-multiplex auto-discovery.
+---Default: `true` if `server.cmd` is not set, otherwise `false`.
+---If enabled, rustaceanvim will try to detect if an ra-multiplex server is running
+---and connect to it (Linux and MacOS only).
+---If auto-discovery does not work, you can set `server.cmd` to a function that
+---returns an LSP RPC client factory (see |vim.lsp.rpc.connect|).
+---@field enable? boolean
+---
+---The host to connect to. Default: '127.0.0.1'
+---@field host? string
+---
+---The port to connect to. Default: 27631
+---@field port? integer
 
 ---@alias rustaceanvim.server.status_notify_level 'error' | 'warning' | rustaceanvim.disable
 

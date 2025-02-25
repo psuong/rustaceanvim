@@ -50,7 +50,7 @@ function server.load_rust_analyzer_settings(project_root, opts)
   local config_json = results[1]
   local content = os.read_file(config_json)
   if not content then
-    vim.notify('Could not read ' .. config_json, vim.log.levels.WARNING)
+    vim.notify('Could not read ' .. config_json, vim.log.levels.WARN)
     return default_settings
   end
   local json = require('rustaceanvim.config.json')
@@ -159,6 +159,12 @@ function server.create_client_capabilities()
 
   local capabilities = mk_capabilities_for_completion(modules)
 
+  local blink_capabilities = mk_capabilities_if_available('blink.cmp', function(blink)
+    return blink.get_lsp_capabilities()
+  end)
+  local cmp_capabilities = mk_capabilities_if_available('cmp_nvim_lsp', function(cmp_nvim_lsp)
+    return cmp_nvim_lsp.default_capabilities()
+  end)
   local selection_range_capabilities = mk_capabilities_if_available('lsp-selection-range', function(lsp_selection_range)
     return lsp_selection_range.update_capabilities {}
   end)
@@ -175,7 +181,8 @@ function server.create_client_capabilities()
   return vim.tbl_deep_extend(
     'force',
     rs_capabilities,
-    capabilities,
+    blink_capabilities,
+    cmp_capabilities,
     selection_range_capabilities,
     folding_range_capabilities
   )

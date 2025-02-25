@@ -5,17 +5,27 @@ local health = {}
 local h = vim.health
 
 ---@class rustaceanvim.LuaDependency
----@field module string The name of a module
----@field optional fun():boolean Function that returns whether the dependency is optional
+---@field name string The name of the dependency
+---@field module string The name of a module to check for
+---@field is_optional fun():boolean Function that returns whether the dependency is optional
+---@field is_configured fun():boolean Function that returns whether the dependency is configured
 ---@field url string URL (markdown)
 ---@field info string Additional information
 
 ---@type rustaceanvim.LuaDependency[]
 local lua_dependencies = {
   {
+    name = 'nvim-dap',
     module = 'dap',
-    optional = function()
+    is_optional = function()
       return true
+    end,
+    is_configured = function()
+      local rustaceanvim_opts = type(vim.g.rustaceanvim) == 'function' and vim.g.rustaceanvim()
+        or vim.g.rustaceanvim
+        or {}
+      local dap_opts = vim.tbl_get(rustaceanvim_opts, 'dap')
+      return type(dap_opts) == 'table'
     end,
     url = '[mfussenegger/nvim-dap](https://github.com/mfussenegger/nvim-dap)',
     info = 'Needed for debugging features',
@@ -24,9 +34,10 @@ local lua_dependencies = {
 
 ---@class rustaceanvim.ExternalDependency
 ---@field name string Name of the dependency
+---@field required_version_spec? string Version range spec. See `vim.version.range()`
 ---@field get_binaries fun():string[] Function that returns the binaries to check for
 ---@field is_installed? fun(bin: string):boolean Default: `vim.fn.executable(bin) == 1`
----@field optional fun():boolean Function that returns whether the dependency is optional
+---@field is_optional fun():boolean Function that returns whether the dependency is optional
 ---@field url string URL (markdown)
 ---@field info string Additional information
 ---@field extra_checks_if_installed? fun(bin: string) Optional extra checks to perform if the dependency is installed
@@ -38,10 +49,14 @@ local function check_lua_dependency(dep)
     h.ok(dep.url .. ' installed.')
     return
   end
-  if dep.optional() then
-    h.warn(('%s not installed. %s %s'):format(dep.module, dep.info, dep.url))
+  if dep.is_optional() then
+    if dep.is_configured() then
+      h.warn(('optional dependency %s is configured, but not installed. %s %s'):format(dep.name, dep.info, dep.url))
+    else
+      h.ok(('optional dependency %s not installed. %s %s'):format(dep.name, dep.info, dep.url))
+    end
   else
-    error(('Lua dependency %s not found: %s'):format(dep.module, dep.url))
+    error(('Lua dependency %s not found: %s'):format(dep.name, dep.url))
   end
 end
 
@@ -62,6 +77,13 @@ local check_installed = function(dep)
         handle:close()
         if error_msg then
           return false, binary, error_msg
+        end
+        if dep.required_version_spec then
+          local version_range = vim.version.range(dep.required_version_spec)
+          if version_range and not version_range:has(binary_version) then
+            local msg = 'Unsuported version. Required ' .. dep.required_version_spec .. ', but found ' .. binary_version
+            return false, binary, msg
+          end
         end
         return true, binary, binary_version
       end
@@ -86,14 +108,8 @@ local function check_external_dependency(dep)
     end
     return
   end
-  if dep.optional() then
-    h.warn(([[
-      %s: not found.
-      Install %s for extended capabilities.
-      %s
-      ]]):format(dep.name, dep.url, dep.info))
-  else
-    error(([[
+  if not dep.is_optional() then
+    h.error(([[
       %s: not found: %s
       rustaceanvim requires %s.
       %s
@@ -202,15 +218,12 @@ function health.check()
         return { get_rust_analyzer_binary() }
       end,
       is_installed = function(bin)
-        if type(vim.system) == 'function' then
-          local success = pcall(function()
-            vim.system { bin, '--version' }
-          end)
-          return success
-        end
-        return vim.fn.executable(bin) == 1
+        local success = pcall(function()
+          vim.system { bin, '--version' }
+        end)
+        return success
       end,
-      optional = function()
+      is_optional = function()
         return false
       end,
       url = '[rust-analyzer](https://rust-analyzer.github.io/)',
@@ -223,11 +236,28 @@ function health.check()
       end,
     },
     {
+      name = 'ra-multiplex',
+      get_binaries = function()
+        return { 'ra-multiplex' }
+      end,
+      is_installed = function(bin)
+        local success = pcall(function()
+          vim.system { bin, '--version' }
+        end)
+        return success
+      end,
+      is_optional = function()
+        return true
+      end,
+      url = '[ra-multiplex](https://github.com/pr2502/ra-multiplex)',
+      info = 'Multiplex server for rust-analyzer.',
+    },
+    {
       name = 'Cargo',
       get_binaries = function()
         return { 'cargo' }
       end,
-      optional = function()
+      is_optional = function()
         return true
       end,
       url = '[Cargo](https://doc.rust-lang.org/cargo/)',
@@ -242,7 +272,7 @@ function health.check()
       get_binaries = function()
         return { 'rustc' }
       end,
-      optional = function()
+      is_optional = function()
         return true
       end,
       url = '[rustc](https://doc.rust-lang.org/rustc/what-is-rustc.html)',
@@ -259,12 +289,28 @@ function health.check()
       get_binaries = function()
         return { config.tools.cargo_override }
       end,
-      optional = function()
+      is_optional = function()
         return true
       end,
       url = '',
       info = [[
       Set in the config to override the 'cargo' command for debugging and testing.
+    ]],
+    })
+  elseif config.tools.enable_nextest then
+    table.insert(external_dependencies, {
+      name = 'cargo-nextest',
+      required_version_spec = '>=0.9.81',
+      get_binaries = function()
+        return { 'cargo-nextest' }
+      end,
+      is_optional = function()
+        return false
+      end,
+      url = '[cargo-nextest](https://nexte.st)',
+      info = [[
+      Next generation test runner for Rust projects.
+      Optional dependency, required if the 'tools.enable_nextest' option is set.
     ]],
     })
   end
@@ -281,7 +327,7 @@ function health.check()
           return { 'codelldb', adapter.executable.command }
         end
       end,
-      optional = function()
+      is_optional = function()
         return true
       end,
       url = '[lldb](https://lldb.llvm.org/)',

@@ -4,6 +4,158 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.25.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.24.4...v5.25.0) (2025-02-25)
+
+
+### Features
+
+* add mason v2.x support ([#687](https://github.com/mrcjkb/rustaceanvim/issues/687)) ([a04505c](https://github.com/mrcjkb/rustaceanvim/commit/a04505cf5d4fb87e62a1a456da74021e1aebdab3))
+
+## [5.24.4](https://github.com/mrcjkb/rustaceanvim/compare/v5.24.3...v5.24.4) (2025-02-03)
+
+
+### Bug Fixes
+
+* **config/dap:** use absolute path to debug adapter if available ([#679](https://github.com/mrcjkb/rustaceanvim/issues/679)) ([96f6ac9](https://github.com/mrcjkb/rustaceanvim/commit/96f6ac93e9b2516c6606495e6b056bbaa3c1e916))
+
+## [5.24.3](https://github.com/mrcjkb/rustaceanvim/compare/v5.24.2...v5.24.3) (2025-01-31)
+
+
+### Reverts
+
+* **termopen:** replace termopen with jobstart ([#675](https://github.com/mrcjkb/rustaceanvim/issues/675)) ([2d32201](https://github.com/mrcjkb/rustaceanvim/commit/2d32201afa2390ef2a2f97f33f82b5ae8992447c))
+
+## [5.24.2](https://github.com/mrcjkb/rustaceanvim/compare/v5.24.1...v5.24.2) (2025-01-28)
+
+
+### Bug Fixes
+
+* **health:** correct method names in external_deps section ([#672](https://github.com/mrcjkb/rustaceanvim/issues/672)) ([b545d4f](https://github.com/mrcjkb/rustaceanvim/commit/b545d4f488ae4dcb20c47c56ec5a0c1e2e2b7993))
+
+## [5.24.1](https://github.com/mrcjkb/rustaceanvim/compare/v5.24.0...v5.24.1) (2025-01-28)
+
+
+### Bug Fixes
+
+* **dap:** validate custom DAP client configs ([#670](https://github.com/mrcjkb/rustaceanvim/issues/670)) ([ca7e678](https://github.com/mrcjkb/rustaceanvim/commit/ca7e67866918e32a72e536c5097e80f9e2670bf6))
+
+## [5.24.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.23.1...v5.24.0) (2025-01-27)
+
+
+### Features
+
+* **health:** don't warn if nvim-dap is not configured ([630c8b0](https://github.com/mrcjkb/rustaceanvim/commit/630c8b09b3e97c31830c39f3b58a067209d11cb3))
+* notify if using an unsupported Nvim version ([f571a59](https://github.com/mrcjkb/rustaceanvim/commit/f571a596d64a814ff6cb2e1907e4a57bbc5b9291))
+
+
+### Bug Fixes
+
+* **dap:** remove deprecated function call ([5d993d3](https://github.com/mrcjkb/rustaceanvim/commit/5d993d3ce8860120afcdc43bf92bf113eca3ddaf))
+
+## [5.23.1](https://github.com/mrcjkb/rustaceanvim/compare/v5.23.0...v5.23.1) (2025-01-23)
+
+
+### Bug Fixes
+
+* **lsp/windows:** unable to find rust-analyzer executable binary ([#665](https://github.com/mrcjkb/rustaceanvim/issues/665)) ([9694dfd](https://github.com/mrcjkb/rustaceanvim/commit/9694dfd9d3b4a7a1e9b7b649c38f0e937d413ed3))
+
+## [5.23.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.22.0...v5.23.0) (2025-01-22)
+
+
+### Features
+
+* **lsp:** preliminary support for `vim.lsp.config` ([#660](https://github.com/mrcjkb/rustaceanvim/issues/660)) ([00dedc6](https://github.com/mrcjkb/rustaceanvim/commit/00dedc6ab8dffee547b0bbb721feec18c3fd892b))
+
+
+### Bug Fixes
+
+* **health:** .vscode settings reported as loaded if .vscode/ is empty ([#662](https://github.com/mrcjkb/rustaceanvim/issues/662)) ([88298cd](https://github.com/mrcjkb/rustaceanvim/commit/88298cd17d3063a3536fa73a7b7378f67ff41183))
+
+## [5.22.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.21.0...v5.22.0) (2025-01-02)
+
+
+### Features
+
+* **lsp/codeAction:** make float window keymaps configurable ([#644](https://github.com/mrcjkb/rustaceanvim/issues/644)) ([17f8654](https://github.com/mrcjkb/rustaceanvim/commit/17f8654d8f0913314f635ba4bd955715d6fadd44))
+
+## [5.21.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.20.1...v5.21.0) (2025-01-02)
+
+
+### Features
+
+* **health:** check for optional ra-multiplex dependency ([f855920](https://github.com/mrcjkb/rustaceanvim/commit/f8559209f4234827904611f3a575f74e9923190e))
+
+
+### Bug Fixes
+
+* **health:** don't error if cargo-nextest isn't found ([618f274](https://github.com/mrcjkb/rustaceanvim/commit/618f274837ae4b620ebf7ab4beff728eb8684d13))
+
+## [5.20.1](https://github.com/mrcjkb/rustaceanvim/compare/v5.20.0...v5.20.1) (2024-12-24)
+
+
+### Bug Fixes
+
+* remove debug print 🫣 ([52a031f](https://github.com/mrcjkb/rustaceanvim/commit/52a031f600caf53520f2ba1ad9a6055f04c71e79))
+
+## [5.20.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.19.2...v5.20.0) (2024-12-24)
+
+
+### Features
+
+* **lsp:** auto-connect to ra-multiplex if running ([b394709](https://github.com/mrcjkb/rustaceanvim/commit/b394709bb65d074ec9985c244d1eded19f6130f7))
+
+
+### Bug Fixes
+
+* **lsp:** don't eagerly evaluate `server.cmd` ([7a1511b](https://github.com/mrcjkb/rustaceanvim/commit/7a1511b58eed4d0753e6830c07a15a483ea4428b))
+
+## [5.19.2](https://github.com/mrcjkb/rustaceanvim/compare/v5.19.1...v5.19.2) (2024-12-17)
+
+
+### Bug Fixes
+
+* **commands/relatedDiagnostics:** error opening quickfix list in nightly ([aff6748](https://github.com/mrcjkb/rustaceanvim/commit/aff6748b6013b003cb4c4ecde988ea9e3a84554b))
+
+## [5.19.1](https://github.com/mrcjkb/rustaceanvim/compare/v5.19.0...v5.19.1) (2024-12-17)
+
+
+### Bug Fixes
+
+* **neotest:** prevent running multiple tests when running a single test with cargo-nextest ([#619](https://github.com/mrcjkb/rustaceanvim/issues/619)) ([152d1e7](https://github.com/mrcjkb/rustaceanvim/commit/152d1e7a25f30309dee993915b8811340c46203b))
+
+## [5.19.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.18.0...v5.19.0) (2024-12-15)
+
+
+### Features
+
+* **lsp:** auto-register `blink.cmp` client capabilities ([#616](https://github.com/mrcjkb/rustaceanvim/issues/616)) ([056078b](https://github.com/mrcjkb/rustaceanvim/commit/056078bed1039deda44f59185acee07c37f3dc3b))
+
+## [5.18.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.17.1...v5.18.0) (2024-12-08)
+
+
+### Features
+
+* **diagnostics:** focus preview window when invoking commands again with `current` argument ([#607](https://github.com/mrcjkb/rustaceanvim/issues/607)) ([a7bb78c](https://github.com/mrcjkb/rustaceanvim/commit/a7bb78c73a317db7faf53641dc23c8ac34ba8225))
+
+
+### Bug Fixes
+
+* **neotest:** prevent coloured output when using cargo-nextest ([#610](https://github.com/mrcjkb/rustaceanvim/issues/610)) ([87a7b0b](https://github.com/mrcjkb/rustaceanvim/commit/87a7b0b651c61a4946ee9d69c1b7afcc679bdfa3))
+
+## [5.17.1](https://github.com/mrcjkb/rustaceanvim/compare/v5.17.0...v5.17.1) (2024-12-04)
+
+
+### Bug Fixes
+
+* **`relatedDiagnostics`:** compatibility with Nvim 0.10.2 ([#605](https://github.com/mrcjkb/rustaceanvim/issues/605)) ([01ebc76](https://github.com/mrcjkb/rustaceanvim/commit/01ebc765018039aa2a442ce857e868e7f2850c9c))
+
+## [5.17.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.16.0...v5.17.0) (2024-12-03)
+
+
+### Features
+
+* **diagnostics:** `:RustLsp relatedDiagnostics` command ([#601](https://github.com/mrcjkb/rustaceanvim/issues/601)) ([0813d4d](https://github.com/mrcjkb/rustaceanvim/commit/0813d4d6b3f007a7ca92046f3ccb848e978db35f))
+
 ## [5.16.0](https://github.com/mrcjkb/rustaceanvim/compare/v5.15.4...v5.16.0) (2024-12-02)
 
 
